@@ -6,6 +6,7 @@ from mmcv.runner import (DistSamplerSeedHook, EpochBasedRunner, OptimizerHook,
 from ..core import DistEvalHook, EvalHook, Fp16OptimizerHook
 from ..datasets import build_dataloader, build_dataset
 from ..utils import get_root_logger
+from .autotest_hook import AutoTestHook
 
 
 def train_model(model,
@@ -87,6 +88,9 @@ def train_model(model,
                                    cfg.get('momentum_config', None))
     if distributed:
         runner.register_hook(DistSamplerSeedHook())
+
+    # register autotest hook
+    runner.register_hook(AutoTestHook())
 
     if validate:
         eval_cfg = cfg.get('evaluation', {})
