@@ -52,6 +52,7 @@ def parse_args():
     parser.add_argument('--pavi', dest='pavi', action='store_true', default=False, help='pavi use')
     parser.add_argument('--pavi-project', type=str, default="default", help='pavi project name')
     parser.add_argument('--data_reader', type=str, default="MemcachedReader", choices=['MemcachedReader', 'CephReader'], help='io backend')
+    parser.add_argument('--max-step', type=int, default=None, help='training epoch')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -66,6 +67,14 @@ def main():
     # add pavi support
     if args.pavi:
         cfg.log_config.hooks.append(dict(type='PaviLoggerHook', init_kwargs=dict(project=args.pavi_project)))
+
+    if args.max_step != None:
+        cfg.total_epochs = args.max_step
+        cfg.evaluation['interval'] = args.max_step
+    
+    if mmcv.__version__ <= '1.0.2' and cfg.lr_config['policy'] == 'CosineAnnealing':
+        cfg.lr_config['policy'] = 'CosineAnealing'
+
     # add ceph support
     if args.data_reader=='CephReader':
         cfg.data_root = cfg.ceph_data_root
