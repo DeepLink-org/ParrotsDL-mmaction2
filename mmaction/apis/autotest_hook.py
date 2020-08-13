@@ -1,3 +1,4 @@
+import os
 import time
 import numpy as np
 import torch
@@ -23,13 +24,16 @@ class AutoTestHook(Hook):
     def after_iter(self, runner):
         cur_iter = runner.iter
         self.end_iter = time.time()
-        if cur_iter >= 100 and cur_iter <= 300 and len(self.iter_time_list) < 200:
+        if cur_iter >= 100 and cur_iter <= 300:
             self.iter_time_list.append(self.end_iter-self.t)
             if self.mem_alloc == -1:
                 self.mem_alloc = self._get_max_memory(runner)
             if self.mem_cached == -1:
                 self.mem_cached = self._get_max_memory_cached(runner)
         self.t = self.end_iter
+        if os.environ.get('PARROTS_BENCHMARK') == '1' and cur_iter == 310:
+            self.after_run(runner)
+            exit(0)
 
     @master_only
     def after_run(self, runner):
