@@ -50,13 +50,14 @@ class AutoTestHook(Hook):
         iter_time_list = self.iter_time_list
         mem_alloc = self.mem_alloc
         mem_cached = self.mem_cached
+        logger.info('__benchmark_total_time(h):{}'.format((end_time - start_time) / 3600))
+        logger.info('__benchmark_pure_training_time(h):{}'.format((end_time - run_time) / 3600))
+        logger.info('__benchmark_avg_iter_time(s):{}'.format(np.mean(iter_time_list)))
+        logger.info('__benchmark_mem_alloc(mb):{}'.format(mem_alloc))
+        logger.info('__benchmark_mem_cached(mb):{}'.format(mem_cached))
+
 
         if writer:
-            logger.info('__benchmark_total_time(h):{}'.format((end_time - start_time) / 3600))
-            logger.info('__benchmark_pure_training_time(h):{}'.format((end_time - run_time) / 3600))
-            logger.info('__benchmark_avg_iter_time(s):{}'.format(np.mean(iter_time_list)))
-            logger.info('__benchmark_mem_alloc(mb):{}'.format(mem_alloc))
-            logger.info('__benchmark_mem_cached(mb):{}'.format(mem_cached))
             writer.add_scalar('__benchmark_total_time(h)',(end_time - start_time) / 3600,1)
             writer.add_scalar('__benchmark_pure_training_time(h)',(end_time - run_time) / 3600,1)
             writer.add_scalar('__benchmark_avg_iter_time(s)',np.mean(iter_time_list),1)
