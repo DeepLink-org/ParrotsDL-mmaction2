@@ -1,9 +1,12 @@
 import copy
 import os
 import os.path as osp
+import json
 
 import mmcv
 import numpy as np
+from petrel_client.client import Client
+import io
 
 from ..core import average_recall_at_avg_proposals
 from .base import BaseDataset
@@ -77,7 +80,11 @@ class ActivityNetDataset(BaseDataset):
     def load_annotations(self):
         """Load the annotation according to ann_file into video_infos."""
         video_infos = []
-        anno_database = mmcv.load(self.ann_file)
+        if 's3://' in self.ann_file:
+            value = Client().get(self.ann_file).decode('utf-8').strip('\n')
+            anno_database = json.loads(value)
+        else:
+            anno_database = mmcv.load(self.ann_file)
         for video_name in anno_database:
             video_info = anno_database[video_name]
             video_info['video_name'] = video_name
