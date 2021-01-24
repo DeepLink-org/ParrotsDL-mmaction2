@@ -84,7 +84,7 @@ def main():
         cfg.ann_file_test = cfg.ceph_ann_file_test
 
         ceph_dict = {
-            'io_backend':'petrel', 'num_threads':1
+            'io_backend':'petrel'
         }
         cfg.train_pipeline[0].update(ceph_dict)
         cfg.val_pipeline[0].update(ceph_dict)

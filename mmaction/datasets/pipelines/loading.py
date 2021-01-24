@@ -6,6 +6,7 @@ import shutil
 import mmcv
 import numpy as np
 from mmcv.fileio import FileClient
+from petrel_client.client import Client
 from torch.nn.modules.utils import _pair
 
 from ...utils import get_random_string, get_shm_dir, get_thread_id
@@ -880,11 +881,15 @@ class LoadLocalizationFeature(object):
         raw_feature_ext (str): Raw feature file extension.  Default: '.csv'.
     """
 
-    def __init__(self, raw_feature_ext='.csv'):
+    def __init__(self, raw_feature_ext='.csv', io_backend='disk', **kwargs):
         valid_raw_feature_ext = ('.csv', )
         if raw_feature_ext not in valid_raw_feature_ext:
             raise NotImplementedError
         self.raw_feature_ext = raw_feature_ext
+        self.kwargs = kwargs
+        self.io_backend = io_backend
+        if self.io_backend == 'petrel':
+            self.file_client = Client()
 
     def __call__(self, results):
         """Perform the LoadLocalizationFeature loading.
@@ -897,8 +902,11 @@ class LoadLocalizationFeature(object):
         data_prefix = results['data_prefix']
 
         data_path = osp.join(data_prefix, video_name + self.raw_feature_ext)
-        raw_feature = np.loadtxt(
-            data_path, dtype=np.float32, delimiter=',', skiprows=1)
+        if self.io_backend == 'petrel':
+            value = io.BytesIO(self.file_client.get(data_path))
+            raw_feature = np.loadtxt(value, dtype=np.float32, delimiter=',', skiprows=1)
+        else:
+            raw_feature = np.loadtxt(data_path, dtype=np.float32, delimiter=',', skiprows=1)
 
         results['raw_feature'] = np.transpose(raw_feature, (1, 0))
 
