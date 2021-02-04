@@ -8,6 +8,42 @@ from ..datasets import build_dataloader, build_dataset
 from ..utils import get_root_logger
 from .autotest_hook import AutoTestHook
 
+try:
+    import io
+    import os
+    from mmcv.runner import CheckpointLoader, get_dist_info
+    from mmcv.fileio import FileClient
+    @CheckpointLoader.register_scheme(prefixes='s3://', force=True)
+    def load_from_ceph(filename, map_location=None, backend='petrel'):
+        """load checkpoint through the file path prefixed with s3. In distributed
+        setting, this function only download checkpoint at local rank 0.
+        Args:
+            filename (str): checkpoint file path with s3 prefix
+            map_location (str, optional): Same as :func:`torch.load`.
+            backend (str): The storage backend type. Options are "disk", "ceph",
+                "memcached" and "lmdb". Default: 'ceph'
+        Returns:
+            dict or OrderedDict: The loaded checkpoint.
+        """
+        rank, world_size = get_dist_info()
+        rank = int(os.environ.get('LOCAL_RANK', rank))
+        allowed_backends = ['ceph', 'petrel']
+        if backend not in allowed_backends:
+            raise ValueError(f'Load from Backend {backend} is not supported.')
+        if rank == 0:
+            fileclient = FileClient(backend=backend)
+            buffer = io.BytesIO(fileclient.get(filename))
+            checkpoint = torch.load(buffer, map_location=map_location)
+        if world_size > 1:
+            torch.distributed.barrier()
+            if rank > 0:
+                fileclient = FileClient(backend=backend)
+                buffer = io.BytesIO(fileclient.get(filename))
+                checkpoint = torch.load(buffer, map_location=map_location)
+        return checkpoint
+except:
+    pass
+
 
 def train_model(model,
                 dataset,
