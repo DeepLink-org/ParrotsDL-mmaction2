@@ -208,8 +208,15 @@ class ResNet3dPathway(ResNet3d):
             logger (logging.Logger): The logger used to print
                 debugging infomation.
         """
-
-        state_dict_r2d = _load_checkpoint(self.pretrained)
+        if self.pretrained.startswith("s3://"):
+            from petrel_client.client import Client
+            from mmcv.runner import load_checkpoint, load_state_dict
+            import io
+            import torch
+            file_ceph = io.BytesIO(Client().Get(self.pretrained))
+            state_dict_r2d = torch.load(file_ceph)
+        else:
+            state_dict_r2d = _load_checkpoint(self.pretrained)
         if 'state_dict' in state_dict_r2d:
             state_dict_r2d = state_dict_r2d['state_dict']
 
@@ -439,7 +446,24 @@ class ResNet3dSlowFast(nn.Module):
             msg = f'load model from: {self.pretrained}'
             print_log(msg, logger=logger)
             # Directly load 3D model.
-            load_checkpoint(self, self.pretrained, strict=True, logger=logger)
+            if self.pretrained.startswith("s3://"):
+                from petrel_client.client import Client
+                from mmcv.runner import load_checkpoint, load_state_dict
+                import io
+                import torch
+                file_ceph = io.BytesIO(Client().Get(self.pretrained))
+                checkpoint = torch.load(file_ceph)
+                if 'state_dict' in checkpoint:
+                    state_dict = checkpoint['state_dict']
+                else:
+                    state_dict = checkpoint
+                # strip prefix of state_dict
+                if list(state_dict.keys())[0].startswith('module.'):
+                    state_dict = {k[7:]: v for k, v in state_dict.items()}
+                # load state_dict
+                load_state_dict(self, state_dict, strict=False, logger=logger)
+            else:
+                load_checkpoint(self, self.pretrained, strict=False, logger=logger)
         elif self.pretrained is None:
             # Init two branch seperately.
             self.fast_path.init_weights()
