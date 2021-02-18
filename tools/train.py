@@ -6,6 +6,7 @@ import time
 
 import mmcv
 import torch
+from torch import distributed as dist
 from mmcv import Config
 from mmcv.runner import init_dist, set_random_seed
 
@@ -128,7 +129,17 @@ def main():
         distributed = False
     else:
         distributed = True
-        init_dist(args.launcher, **cfg.dist_params)
+        if args.launcher == "slurm":
+            init_dist(args.launcher, **cfg.dist_params)
+        elif args.launcher == "mpi":
+            rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
+            num_gpus = torch.cuda.device_count()
+            torch.cuda.set_device(rank % num_gpus)
+            #dist.init_process_group(backend="nccl", **cfg.dist_params)
+            #dist.init_process_group(**cfg.dist_params)
+            dist.init_process_group(backend="nccl")
+        else:
+            pass
 
     # create work_dir
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_dir))

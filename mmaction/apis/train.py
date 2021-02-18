@@ -147,5 +147,22 @@ def train_model(model,
     if cfg.resume_from:
         runner.resume(cfg.resume_from)
     elif cfg.load_from:
-        runner.load_checkpoint(cfg.load_from)
+        if cfg.load_from.startswith("s3://"):
+            from petrel_client.client import Client
+            from mmcv.runner import load_state_dict
+            import io
+            file_ceph = io.BytesIO(Client().Get(cfg.load_from))
+            checkpoint = torch.load(file_ceph,map_location="cpu")
+            if 'state_dict' in checkpoint:
+                state_dict = checkpoint['state_dict']
+            else:
+                state_dict = checkpoint
+            # strip prefix of state_dict
+            if list(state_dict.keys())[0].startswith('module.'):
+                state_dict = {k[7:]: v for k, v in state_dict.items()}
+            # load state_dict
+                load_state_dict(runner.model, state_dict, strict=False, logger=logger)
+        else:
+           runner.load_checkpoint(cfg.load_from)
+
     runner.run(data_loaders, cfg.workflow, cfg.total_epochs)
