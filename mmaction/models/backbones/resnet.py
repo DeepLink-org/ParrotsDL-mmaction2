@@ -465,7 +465,7 @@ class ResNet(nn.Module):
                                      strict=False,
                                      logger=None):
         """Initiate the parameters from torchvision pretrained checkpoint."""
-        state_dict_torchvision = _load_checkpoint(self.pretrained)
+        state_dict_torchvision = _load_checkpoint(pretrained)
         if 'state_dict' in state_dict_torchvision:
             state_dict_torchvision = state_dict_torchvision['state_dict']
 
@@ -506,20 +506,19 @@ class ResNet(nn.Module):
                 # torchvision's
                 if self.pretrained.startswith("s3://"):
                     from petrel_client.client import Client
-                    from mmcv.runner import load_checkpoint, load_state_dict
-                    import io
-                    import torch
-                    file_ceph = io.BytesIO(Client().Get(self.pretrained))
-                    checkpoint = torch.load(file_ceph)
-                    if 'state_dict' in checkpoint:
-                        state_dict = checkpoint['state_dict']
+                    import os
+                    if os.environ['LOCAL_RANK'] == 'mpi':
+                        local_rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
                     else:
-                        state_dict = checkpoint
-                    # strip prefix of state_dict
-                    if list(state_dict.keys())[0].startswith('module.'):
-                        state_dict = {k[7:]: v for k, v in state_dict.items()}
-                    # load state_dict
-                    load_state_dict(self, state_dict, strict=False, logger=logger)
+                        local_rank = int(os.environ['LOCAL_RANK'])
+                    data_ceph = Client().Get(self.pretrained)
+                    fd = os.path.abspath(
+                        './' + str(local_rank) + self.pretrained.split('/')[-1])
+                    with open(fd, 'wb') as f:
+                        f.write(data_ceph)
+                    self._load_torchvision_checkpoint(
+                        fd, strict=False, logger=logger)
+                    os.remove(fd)
                 else:
                     self._load_torchvision_checkpoint(
                         self.pretrained, strict=False, logger=logger)
