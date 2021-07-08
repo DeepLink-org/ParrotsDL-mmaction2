@@ -506,19 +506,13 @@ class ResNet(nn.Module):
                 # torchvision's
                 if self.pretrained.startswith("s3://"):
                     from petrel_client.client import Client
-                    import os
-                    if os.environ['LOCAL_RANK'] == 'mpi':
-                        local_rank = int(os.environ['OMPI_COMM_WORLD_RANK'])
-                    else:
-                        local_rank = int(os.environ['LOCAL_RANK'])
-                    data_ceph = Client().Get(self.pretrained)
-                    fd = os.path.abspath(
-                        './' + str(local_rank) + self.pretrained.split('/')[-1])
-                    with open(fd, 'wb') as f:
-                        f.write(data_ceph)
-                    self._load_torchvision_checkpoint(
-                        fd, strict=False, logger=logger)
-                    os.remove(fd)
+                    from ...utils import tempFileName
+                    ceph_data = Client().Get(self.pretrained)
+                    with tempFileName() as fd:
+                        with open(fd, 'wb') as f:
+                            f.write(ceph_data)
+                        self._load_torchvision_checkpoint(
+                            fd, strict=False, logger=logger)
                 else:
                     self._load_torchvision_checkpoint(
                         self.pretrained, strict=False, logger=logger)
