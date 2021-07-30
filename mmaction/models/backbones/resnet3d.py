@@ -658,7 +658,6 @@ class ResNet3d(nn.Module):
             from mmcv.runner import load_checkpoint, load_state_dict
             import io
             import torch
-            import sys
             file_ceph = io.BytesIO(Client().Get(self.pretrained))
             from ...utils import tempFileName
             with tempFileName() as fd:
