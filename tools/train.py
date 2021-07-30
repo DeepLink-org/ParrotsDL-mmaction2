@@ -72,7 +72,7 @@ def main():
     if args.max_step != None:
         cfg.total_epochs = args.max_step
         cfg.evaluation['interval'] = args.max_step
-    
+
     if mmcv.__version__ <= '1.0.2' and cfg.lr_config['policy'] == 'CosineAnnealing':
         cfg.lr_config['policy'] = 'CosineAnealing'
 

@@ -658,8 +658,14 @@ class ResNet3d(nn.Module):
             from mmcv.runner import load_checkpoint, load_state_dict
             import io
             import torch
+            import sys
             file_ceph = io.BytesIO(Client().Get(self.pretrained))
-            state_dict_r2d = torch.load(file_ceph)
+            from ...utils import tempFileName
+            with tempFileName() as fd:
+                with open(fd, 'wb') as f:
+                    f.write(file_ceph.read())
+                print("tempFileName: ", f)
+                state_dict_r2d = _load_checkpoint(fd)
         else:
             state_dict_r2d = _load_checkpoint(self.pretrained)
         if 'state_dict' in state_dict_r2d:
