@@ -663,7 +663,6 @@ class ResNet3d(nn.Module):
             with tempFileName() as fd:
                 with open(fd, 'wb') as f:
                     f.write(file_ceph.read())
-                print("tempFileName: ", f)
                 state_dict_r2d = _load_checkpoint(fd)
         else:
             state_dict_r2d = _load_checkpoint(self.pretrained)
