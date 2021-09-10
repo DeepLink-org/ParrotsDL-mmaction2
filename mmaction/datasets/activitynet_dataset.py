@@ -81,7 +81,7 @@ class ActivityNetDataset(BaseDataset):
         """Load the annotation according to ann_file into video_infos."""
         video_infos = []
         if 's3://' in self.ann_file:
-            value = Client().get(self.ann_file).decode('utf-8').strip('\n')
+            value = Client().Get(self.ann_file).decode('utf-8').strip('\n')
             anno_database = json.loads(value)
         else:
             anno_database = mmcv.load(self.ann_file)
