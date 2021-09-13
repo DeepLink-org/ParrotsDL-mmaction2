@@ -32,13 +32,13 @@ try:
             raise ValueError(f'Load from Backend {backend} is not supported.')
         if rank == 0:
             fileclient = FileClient(backend=backend)
-            buffer = io.BytesIO(fileclient.get(filename))
+            buffer = io.BytesIO(fileclient.Get(filename))
             checkpoint = torch.load(buffer, map_location=map_location)
         if world_size > 1:
             torch.distributed.barrier()
             if rank > 0:
                 fileclient = FileClient(backend=backend)
-                buffer = io.BytesIO(fileclient.get(filename))
+                buffer = io.BytesIO(fileclient.Get(filename))
                 checkpoint = torch.load(buffer, map_location=map_location)
         return checkpoint
 except:
