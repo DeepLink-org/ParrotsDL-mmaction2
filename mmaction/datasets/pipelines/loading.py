@@ -555,7 +555,7 @@ class PyAVInit(object):
         if self.file_client is None:
             self.file_client = FileClient(self.io_backend, **self.kwargs)
 
-        file_obj = io.BytesIO(self.file_client.Get(results['filename']))
+        file_obj = io.BytesIO(self.file_client.get(results['filename']))
         container = av.open(file_obj)
 
         results['video_reader'] = container
@@ -655,7 +655,7 @@ class DecordInit(object):
         if self.file_client is None:
             self.file_client = FileClient(self.io_backend, **self.kwargs)
 
-        file_obj = io.BytesIO(self.file_client.Get(results['filename']))
+        file_obj = io.BytesIO(self.file_client.get(results['filename']))
         container = decord.VideoReader(file_obj, num_threads=self.num_threads)
         results['video_reader'] = container
         results['total_frames'] = len(container)
@@ -741,7 +741,7 @@ class OpenCVInit(object):
             # save the file of same thread at the same place
             new_path = osp.join(self.tmp_folder, f'tmp_{thread_id}.mp4')
             with open(new_path, 'wb') as f:
-                f.write(self.file_client.Get(results['filename']))
+                f.write(self.file_client.get(results['filename']))
 
         container = mmcv.VideoReader(new_path)
         results['new_path'] = new_path
@@ -846,7 +846,7 @@ class FrameSelector(object):
             frame_idx += offset
             if modality == 'RGB':
                 filepath = osp.join(directory, filename_tmpl.format(frame_idx))
-                img_bytes = self.file_client.Get(filepath)
+                img_bytes = self.file_client.get(filepath)
                 # Get frame with channel order RGB directly.
                 cur_frame = mmcv.imfrombytes(img_bytes, channel_order='rgb')
                 imgs.append(cur_frame)
@@ -855,9 +855,9 @@ class FrameSelector(object):
                                       filename_tmpl.format('x', frame_idx))
                 y_filepath = osp.join(directory,
                                       filename_tmpl.format('y', frame_idx))
-                x_img_bytes = self.file_client.Get(x_filepath)
+                x_img_bytes = self.file_client.get(x_filepath)
                 x_frame = mmcv.imfrombytes(x_img_bytes, flag='grayscale')
-                y_img_bytes = self.file_client.Get(y_filepath)
+                y_img_bytes = self.file_client.get(y_filepath)
                 y_frame = mmcv.imfrombytes(y_img_bytes, flag='grayscale')
                 imgs.extend([x_frame, y_frame])
             else:
@@ -903,7 +903,7 @@ class LoadLocalizationFeature(object):
 
         data_path = osp.join(data_prefix, video_name + self.raw_feature_ext)
         if self.io_backend == 'petrel':
-            value = io.BytesIO(self.file_client.Get(data_path))
+            value = io.BytesIO(self.file_client.get(data_path))
             raw_feature = np.loadtxt(value, dtype=np.float32, delimiter=',', skiprows=1)
         else:
             raw_feature = np.loadtxt(data_path, dtype=np.float32, delimiter=',', skiprows=1)
