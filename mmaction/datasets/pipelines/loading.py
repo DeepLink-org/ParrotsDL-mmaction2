@@ -903,7 +903,7 @@ class LoadLocalizationFeature(object):
 
         data_path = osp.join(data_prefix, video_name + self.raw_feature_ext)
         if self.io_backend == 'petrel':
-            value = io.BytesIO(self.file_client.get(data_path))
+            value = io.BytesIO(self.file_client.Get(data_path))
             raw_feature = np.loadtxt(value, dtype=np.float32, delimiter=',', skiprows=1)
         else:
             raw_feature = np.loadtxt(data_path, dtype=np.float32, delimiter=',', skiprows=1)
