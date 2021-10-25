@@ -5,12 +5,12 @@ model = dict(cls_head=dict(num_classes=101, init_std=0.001))
 
 # dataset settings
 dataset_type = 'RawframeDataset'
-data_root = 'data/ucf101/rawframes/'
-data_root_val = 'data/ucf101/rawframes/'
+data_root = '/mnt/lustre/share/coco/action/ucf101/rawframes/'
+data_root_val = '/mnt/lustre/share/coco/action/ucf101/rawframes/'
 split = 1  # official train/test splits. valid numbers: 1, 2, 3
-ann_file_train = f'data/ucf101/ucf101_train_split_{split}_rawframes.txt'
-ann_file_val = f'data/ucf101/ucf101_val_split_{split}_rawframes.txt'
-ann_file_test = f'data/ucf101/ucf101_val_split_{split}_rawframes.txt'
+ann_file_train = '/mnt/lustre/share/coco/action/ucf101/ucf101_train_split_1_rawframes.txt'
+ann_file_val = '/mnt/lustre/share/coco/action/ucf101/ucf101_val_split_1_rawframes.txt'
+ann_file_test = '/mnt/lustre/share/coco/action/ucf101/ucf101_val_split_1_rawframes.txt'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_bgr=False)
 train_pipeline = [

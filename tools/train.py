@@ -18,10 +18,13 @@ from mmaction.datasets import build_dataset
 from mmaction.models import build_model
 from mmaction.utils import collect_env, get_root_logger, register_module_hooks
 
+use_camb = False
+if torch.__version__ == "parrots":
+    from parrots.base import use_camb
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a recognizer')
-    parser.add_argument('config', help='train config file path')
+    parser.add_argument('--config', help='train config file path')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
         '--resume-from', help='the checkpoint file to resume from')
@@ -156,6 +159,9 @@ def main():
         cfg.model,
         train_cfg=cfg.get('train_cfg'),
         test_cfg=cfg.get('test_cfg'))
+
+    if use_camb:
+        model = model.to_memory_format(torch.channels_last)
 
     if len(cfg.module_hooks) > 0:
         register_module_hooks(model, cfg.module_hooks)
