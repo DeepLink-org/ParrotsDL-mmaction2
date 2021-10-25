@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
 import torch.nn as nn
 from mmcv.cnn import ConvModule, constant_init, kaiming_init
 from mmcv.runner import _load_checkpoint, load_checkpoint
@@ -8,6 +9,9 @@ from torch.utils import checkpoint as cp
 from ...utils import get_root_logger
 from ..builder import BACKBONES
 
+use_camb = False
+if torch.__version__ == "parrots":
+   from parrots.base import use_camb
 
 class BasicBlock(nn.Module):
     """Basic block for ResNet.
@@ -538,6 +542,8 @@ class ResNet(nn.Module):
             torch.Tensor: The feature of the input samples extracted
             by the backbone.
         """
+        if use_camb:
+            x = x.contiguous(torch.channels_last)
         x = self.conv1(x)
         x = self.maxpool(x)
         outs = []
