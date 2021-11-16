@@ -14,6 +14,9 @@ from ..datasets import build_dataloader, build_dataset
 from ..utils import PreciseBNHook, get_root_logger
 from .test import multi_gpu_test
 
+use_camb = False
+if torch.__version__ == "parrots":
+    from parrots.base import use_camb
 
 def train_model(model,
                 dataset,
@@ -76,6 +79,14 @@ def train_model(model,
         data_loaders = [
             build_dataloader(ds, **dataloader_setting) for ds in dataset
         ]
+
+    if cfg.quantify:
+        from torch.utils import quantize
+        model = quantize.convert_to_adaptive_quantize(
+            model, len(data_loaders))
+
+    if use_camb:
+        model = model.to_memory_format(torch.channels_last)
 
     # put model on gpus
     if distributed:
