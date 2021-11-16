@@ -18,9 +18,6 @@ from mmaction.datasets import build_dataset
 from mmaction.models import build_model
 from mmaction.utils import collect_env, get_root_logger, register_module_hooks
 
-use_camb = False
-if torch.__version__ == "parrots":
-    from parrots.base import use_camb
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a recognizer')
@@ -72,6 +69,11 @@ def parse_args():
         default='none',
         help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument(
+        '--quantify',
+        dest='quantify',
+        action='store_true',
+        help='quantify training')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -160,9 +162,6 @@ def main():
         train_cfg=cfg.get('train_cfg'),
         test_cfg=cfg.get('test_cfg'))
 
-    if use_camb:
-        model = model.to_memory_format(torch.channels_last)
-
     if len(cfg.module_hooks) > 0:
         register_module_hooks(model, cfg.module_hooks)
 
@@ -189,6 +188,8 @@ def main():
         cfg.checkpoint_config.meta = dict(
             mmaction_version=__version__ + get_git_hash(digits=7),
             config=cfg.pretty_text)
+
+    cfg['quantify'] = args.quantify
 
     test_option = dict(test_last=args.test_last, test_best=args.test_best)
     train_model(
