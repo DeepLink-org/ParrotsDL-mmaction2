@@ -297,7 +297,7 @@ class FormatShape:
             # M' x C x L x H x W
             # M' = N_crops x N_clips
         elif self.input_format == 'NCHW':
-            imgs = np.transpose(imgs, (0, 3, 1, 2))
+            imgs = np.ascontiguousarray(np.transpose(imgs, (0, 3, 1, 2)))
             # M x C x H x W
         elif self.input_format == 'NCHW_Flow':
             num_clips = results['num_clips']
