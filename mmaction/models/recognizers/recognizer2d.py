@@ -4,7 +4,9 @@ from torch import nn
 
 from ..builder import RECOGNIZERS
 from .base import BaseRecognizer
-
+use_camb = False
+if torch.__version__ == "parrots":
+    from parrots.base import use_camb
 
 @RECOGNIZERS.register_module()
 class Recognizer2D(BaseRecognizer):
@@ -19,8 +21,12 @@ class Recognizer2D(BaseRecognizer):
         num_segs = imgs.shape[0] // batches
 
         losses = dict()
-
+        if use_camb:
+            imgs = imgs.contiguous(torch.channels_last)
+     
         x = self.extract_feat(imgs)
+        if use_camb:
+            x = x.contiguous(torch.channels_last)
 
         if self.backbone_from in ['torchvision', 'timm']:
             if len(x.shape) == 4 and (x.shape[2] > 1 or x.shape[3] > 1):
@@ -39,7 +45,7 @@ class Recognizer2D(BaseRecognizer):
             x = x.squeeze(2)
             num_segs = 1
             losses.update(loss_aux)
-
+        #assert x.is_contiguous(torch.channels_last)
         cls_score = self.cls_head(x, num_segs)
         gt_labels = labels.squeeze()
         loss_cls = self.cls_head.loss(cls_score, gt_labels, **kwargs)
