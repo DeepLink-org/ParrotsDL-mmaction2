@@ -91,6 +91,7 @@ class TSMHead(BaseHead):
         if self.avg_pool is not None:
             x = self.avg_pool(x)
         # [N * num_segs, in_channels, 1, 1]
+        x = x.contiguous()
         x = torch.flatten(x, 1)
         # [N * num_segs, in_channels]
         if self.dropout is not None:
