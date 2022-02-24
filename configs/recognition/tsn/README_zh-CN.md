@@ -232,3 +232,42 @@ python tools/test.py configs/recognition/tsn/tsn_r50_1x1x3_100e_kinetics400_rgb.
 ```
 
 更多测试细节，可参考 [基础教程](/docs_zh_CN/getting_started.md#测试某个数据集) 中的 **测试某个数据集** 部分。
+
+# camb_mlu290 tsn测试
+## 加载环境:
+```shell
+source /mnt/lustre/share/platform/env/pat_latest
+export PYTHONPATH=./models/mmaction:$PYTHONPATH
+```
+进入parrots.test 路径: cd {parrots.test}
+```shell
+git checkout xym/openinfra_build_test
+git submodule update --init models/mmaction
+```
+## step1: rgb和flow训练
+
+rgb训练
+```shell
+sh runner/mmaction/train_mlu.sh camb_mlu290 8 tsn_r50_1x1x3_80e_ucf101_rgb
+```
+
+flow训练
+```shell
+sh runner/mmaction/train_mlu.sh camb_mlu290 8 tsn_r50_1x1x3_30e_ucf101_flow
+```
+
+## step2：测试得到预测结果
+
+用户可以使用以下指令进行模型测试, 生成根目录下flow.pkl, rgb.pkl。
+
+```shell
+sh runner/mmaction/test_mlu.sh camb_mlu290 8 tsn_r50_1x1x3_80e_ucf101_rgb --checkpoint work_dirs/tsn_r50_1x1x3_75e_ucf101_split_1_rgb/latest.pth --out rgb.pkl
+sh runner/mmaction/test_mlu.sh camb_mlu290 8 tsn_r50_1x1x3_30e_ucf101_flow --checkpoint work_dirs/tsn_r50_1x1x3_75e_ucf101_split_1_flow/latest.pth --out flow.pkl
+```
+
+## step3:结果合并
+
+```shell
+srun -p camb_mlu290 -n 1 --gres mlu:1 --ntasks-per-node 1 python models/mmaction/tools/analysis/report_accuracy.py --scores rgb.pkl flow.pkl --datalist /mnt/lustre/share/openmmlab/datasets/action/ucf101/ucf101_val_split_1_rawframes.txt
+
+```

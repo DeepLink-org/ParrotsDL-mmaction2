@@ -31,8 +31,8 @@ except (ImportError, ModuleNotFoundError):
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMAction2 test (and eval) a model')
-    parser.add_argument('config', help='test config file path')
-    parser.add_argument('checkpoint', help='checkpoint file')
+    parser.add_argument('--config', help='test config file path')
+    parser.add_argument('--checkpoint', help='checkpoint file')
     parser.add_argument(
         '--out',
         default=None,
@@ -144,6 +144,8 @@ def inference_pytorch(args, cfg, distributed, data_loader):
     # build the model and load checkpoint
     model = build_model(
         cfg.model, train_cfg=None, test_cfg=cfg.get('test_cfg'))
+    model = model.to_memory_format(torch.channels_last)
+    
 
     if len(cfg.module_hooks) > 0:
         register_module_hooks(model, cfg.module_hooks)
