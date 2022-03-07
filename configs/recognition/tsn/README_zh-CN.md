@@ -244,6 +244,11 @@ export PYTHONPATH=./models/mmaction:$PYTHONPATH
 git checkout xym/openinfra_build_test
 git submodule update --init models/mmaction
 ```
+
+一键脚本
+```shell
+sh runner/mmaction/mlu.sh camb_mlu290 8
+```
 ## step1: rgb和flow训练
 
 rgb训练
