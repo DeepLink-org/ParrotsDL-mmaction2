@@ -17,6 +17,15 @@ from mmaction.datasets import build_dataloader, build_dataset
 from mmaction.models import build_model
 from mmaction.utils import register_module_hooks
 
+try:
+    from parrots.base import use_camb
+except ImportError:
+    is_channel_last = False
+else:
+    is_channel_last = use_camb
+
+
+
 # TODO import test functions from mmcv and delete them from mmaction2
 try:
     from mmcv.engine import multi_gpu_test, single_gpu_test
@@ -144,7 +153,8 @@ def inference_pytorch(args, cfg, distributed, data_loader):
     # build the model and load checkpoint
     model = build_model(
         cfg.model, train_cfg=None, test_cfg=cfg.get('test_cfg'))
-    model = model.to_memory_format(torch.channels_last)
+    if is_channel_last:
+        model = model.to_memory_format(torch.channels_last)
     
 
     if len(cfg.module_hooks) > 0:
