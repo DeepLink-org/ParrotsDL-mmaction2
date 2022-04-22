@@ -7,6 +7,7 @@ import torch
 from mmcv.runner import load_checkpoint
 
 from mmaction.models import build_model
+import onnxoptimizer
 
 try:
     import onnx
@@ -47,7 +48,8 @@ def pytorch2onnx(model,
                  opset_version=11,
                  show=False,
                  output_file='tmp.onnx',
-                 verify=False):
+                 verify=False,
+                 simplify=False):
     """Convert pytorch model to onnx model.
 
     Args:
@@ -75,6 +77,17 @@ def pytorch2onnx(model,
         opset_version=opset_version)
 
     print(f'Successfully exported ONNX model: {output_file}')
+
+    if simplify:
+        import onnxsim
+        onnx_origin = onnx.load(output_file)
+        simplify_file = output_file[:-5] + '_simplify.onnx'# output_file.split('.')[0] + '_simplify.onnx'
+        model_simp, check = onnxsim.simplify(onnx_origin)
+        assert check, "Simplified ONNX model could not be validated."
+        onnx.save(model_simp, simplify_file)
+
+        print(f'Successfully exported ONNX simplified model: {simplify_file}')
+
     if verify:
         # check by onnx
         onnx_model = onnx.load(output_file)
@@ -128,6 +141,8 @@ def parse_args():
         '--softmax',
         action='store_true',
         help='wheter to add softmax layer at the end of recognizers')
+    parser.add_argument('--do_simplify', action='store_true',
+        help='verify if the onnx model need do simplify')
     args = parser.parse_args()
     return args
 
@@ -167,4 +182,5 @@ if __name__ == '__main__':
         opset_version=args.opset_version,
         show=args.show,
         output_file=args.output_file,
-        verify=args.verify)
+        verify=args.verify,
+        simplify=args.do_simplify)
