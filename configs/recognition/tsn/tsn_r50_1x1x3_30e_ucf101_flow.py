@@ -1,4 +1,4 @@
-_base_ = ['_base_/models/tsn_r50.py', '_base_/default_runtime.py']
+_base_ = ['../../_base_/models/tsn_r50.py', '../../_base_/default_runtime.py']
 
 # model settings
 model = dict(backbone=dict(in_channels=10),cls_head=dict(num_classes=101, init_std=0.001))
