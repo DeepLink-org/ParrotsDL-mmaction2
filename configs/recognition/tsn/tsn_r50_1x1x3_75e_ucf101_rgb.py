@@ -7,12 +7,12 @@ file_client_args = dict(backend='disk')
 
 # dataset settings
 dataset_type = 'RawframeDataset'
-data_root = '/mnt/lustre/share/openmmlab/datasets/action/ucf101/rawframes/'
-data_root_val = '/mnt/lustre/share/openmmlab/datasets/action/ucf101/rawframes/'
+data_root = '/mnt/lustre/share_data/PAT/datasets/mmaction/ucf101/rawframes/'
+data_root_val = '/mnt/lustre/share_data/PAT/datasets/mmaction/ucf101/rawframes/'
 split = 1  # official train/test splits. valid numbers: 1, 2, 3
-ann_file_train = f'/mnt/lustre/share/openmmlab/datasets/action/ucf101/ucf101_train_split_{split}_rawframes.txt'
-ann_file_val = f'/mnt/lustre/share/openmmlab/datasets/action/ucf101/ucf101_val_split_{split}_rawframes.txt'
-ann_file_test = f'/mnt/lustre/share/openmmlab/datasets/action/ucf101/ucf101_val_split_{split}_rawframes.txt'
+ann_file_train = f'/mnt/lustre/share_data/PAT/datasets/mmaction/ucf101/ucf101_train_split_{split}_rawframes.txt'
+ann_file_val = f'/mnt/lustre/share_data/PAT/datasets/mmaction/ucf101/ucf101_val_split_{split}_rawframes.txt'
+ann_file_test = f'/mnt/lustre/share_data/PAT/datasets/mmaction/ucf101/ucf101_val_split_{split}_rawframes.txt'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_bgr=False)
