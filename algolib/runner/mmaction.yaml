@@ -1,0 +1,18 @@
+global_configs:
+    reader: CephReader
+    maxstep: None
+    benchmark: None
+    seed: None
+    pavi: None
+
+env_version:
+     pat : 0.16
+     pyt : pt1.5v4
+     mmcv: 1.5.3
+
+global_model_strategy:
+  dummydataset: None
+  dummydataloader: Parrots
+
+models:
+  - stgcn_80e_ntu60_xsub_keypoint_3d
