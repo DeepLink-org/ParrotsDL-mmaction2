@@ -491,29 +491,29 @@ class ResNet3dSlowFast(nn.Module):
                 by the backbone.
         """
         x_slow = nn.functional.interpolate(
-            x,
-            mode='nearest',
+            x.cpu(),
+            mode='area',
             scale_factor=(1.0 / self.resample_rate, 1.0, 1.0))
         x_slow = self.slow_path.conv1(x_slow)
-        x_slow = self.slow_path.maxpool(x_slow)
+        x_slow = self.slow_path.maxpool(x_slow).cuda()
 
         x_fast = nn.functional.interpolate(
-            x,
-            mode='nearest',
+            x.cpu(),
+            mode='area',
             scale_factor=(1.0 / (self.resample_rate // self.speed_ratio), 1.0,
                           1.0))
         x_fast = self.fast_path.conv1(x_fast)
-        x_fast = self.fast_path.maxpool(x_fast)
+        x_fast = self.fast_path.maxpool(x_fast).cuda()
 
         if self.slow_path.lateral:
-            x_fast_lateral = self.slow_path.conv1_lateral(x_fast)
+            x_fast_lateral = self.slow_path.conv1_lateral(x_fast).cuda()
             x_slow = torch.cat((x_slow, x_fast_lateral), dim=1)
 
         for i, layer_name in enumerate(self.slow_path.res_layers):
             res_layer = getattr(self.slow_path, layer_name)
-            x_slow = res_layer(x_slow)
+            x_slow = res_layer(x_slow).cuda()
             res_layer_fast = getattr(self.fast_path, layer_name)
-            x_fast = res_layer_fast(x_fast)
+            x_fast = res_layer_fast(x_fast).cuda()
             if (i != len(self.slow_path.res_layers) - 1
                     and self.slow_path.lateral):
                 # No fusion needed in the final stage
